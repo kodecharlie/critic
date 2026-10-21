@@ -1,5 +1,6 @@
 mod config;
 mod renderer;
+mod pipeline;
 
 use clap::{Parser, Subcommand, Args};
 use config::Config;
@@ -79,12 +80,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match cli.command {
         Commands::Init { app_name } => {
             println!("Initializing data pipeline and embedding store for app: {}...", app_name);
-            // 1. Query Apple API
-            // 2. Scrub PII/Spurious chars
-            // 3. Generate embeddings via Ollama (nomic-embed-text) and persist to pgvector
+            pipeline::run_init(&_config, &app_name).await.unwrap();
         }
         Commands::Update { app_name } => {
             println!("Fetching incremental reviews and updating embeddings for {}...", app_name);
+            pipeline::run_update(&_config, &app_name).await.unwrap();
         }
         Commands::Summary { app_name, begin, end } => {
             // Fetch reviews from vector DB bounded by begin/end, compute stats via LLM/aggregates
