@@ -22,7 +22,7 @@ Once the data pipeline is complete, `critic` can then be executed from the CLI f
 1. What is working for users, and what is not?
 2. What bugs should be addressed?  And what is the urgency of fixes for those bugs?
 3. How many reviews are users posting over time?
-4. Is user-sentiment about the app improving or decling over time?
+4. Is user-sentiment about the app improving or declining over time?
 5. Can I cull bugs from reviews and automatically post them to my bug-tracking system?
 
 Sub-commands for CLI usage are documented below.
