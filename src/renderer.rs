@@ -1,4 +1,5 @@
 use tokio::sync::mpsc;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone)]
 pub enum RenderEvent {
@@ -8,7 +9,7 @@ pub enum RenderEvent {
     SentimentOutput { app: String, series: Vec<(String, f32)> },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BugItem {
     pub description: String,
     pub severity: f32,

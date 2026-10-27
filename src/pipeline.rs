@@ -74,7 +74,7 @@ async fn generate_embedding(client: &Client, text: &str) -> Result<Vec<f32>, Box
 }
 
 /// Fetch reviews from Apple App Store Connect API
-async fn fetch_apple_reviews(config: &Config, app_name: &id, since: Option<DateTime<Utc>>) -> Result<Vec<AppleReviewData>, Box<dyn Error>> {
+async fn fetch_apple_reviews(config: &Config, app_name: &str, since: Option<DateTime<Utc>>) -> Result<Vec<AppleReviewData>, Box<dyn Error>> {
     let client = Client::new();
     // Note: App Store Connect API requires a signed JWT Bearer token using config.apple_key.
     // This demonstrates the standard authenticated API pattern.
@@ -131,7 +131,8 @@ pub async fn run_init(config: &Config, app_name: &str) -> Result<(), Box<dyn Err
 
     println!("Scrubbing reviews and generating embeddings...");
     for rev in reviews {
-        let full_text = format!("{} {}", rev.attributes.title.unwrap_or_default(), rev.attributes.body);
+        let title_str = rev.attributes.title.as_deref().unwrap_or("");
+        let full_text = format!("{} {}", title_str, rev.attributes.body);
         let scrubbed = scrub_text(&full_text);
         let embedding = generate_embedding(&http_client, &scrubbed).await?;
 
@@ -186,7 +187,8 @@ pub async fn run_update(config: &Config, app_name: &str) -> Result<(), Box<dyn E
         println!("Processing {} new reviews...", new_reviews.len());
 
         for rev in new_reviews {
-            let full_text = format!("{} {}", rev.attributes.title.unwrap_or_default(), rev.attributes.body);
+            let title_str = rev.attributes.title.as_deref().unwrap_or("");
+            let full_text = format!("{} {}", title_str, rev.attributes.body);
             let scrubbed = scrub_text(&full_text);
             let embedding = generate_embedding(&http_client, &scrubbed).await?;
             let vector_str = format!("[{}]", embedding.iter().map(|f| f.to_string()).collect::<Vec<_>>().join(","));

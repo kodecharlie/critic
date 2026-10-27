@@ -6,9 +6,9 @@ mod bugs;
 mod counts;
 mod sentiment;
 
-use clap::{Parser, Subcommand, Args};
+use clap::{Parser, Subcommand};
 use config::Config;
-use renderer::{RenderBus, RenderEvent, run_renderer_consumer};
+use renderer::{RenderBus, run_renderer_consumer};
 
 #[derive(Parser)]
 #[command(name = "critic", version = "0.1.0", about = "AI-powered Apple App Review Insights CLI")]
