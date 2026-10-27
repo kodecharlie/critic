@@ -1,6 +1,10 @@
 mod config;
 mod renderer;
 mod pipeline;
+mod summary;
+mod bugs;
+mod counts;
+mod sentiment;
 
 use clap::{Parser, Subcommand, Args};
 use config::Config;
@@ -87,25 +91,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             pipeline::run_update(&_config, &app_name).await.unwrap();
         }
         Commands::Summary { app_name, begin, end } => {
-            // Fetch reviews from vector DB bounded by begin/end, compute stats via LLM/aggregates
-            let sample_data = format!("Weighted Rating: 4.6 / 5.0 (Total Ratings: 1,420). Range: {:?} to {:?}", begin, end);
-            bus.publish(RenderEvent::SummaryOutput { app: app_name, data: sample_data }).await;
+            println!("Fetching reviews from vector DB bounded by begin/end, compute stats via LLM/aggregates");
+            summary::run_summary(&_config, &app_name, begin, end, &bus).await.unwrap();
         }
-        Commands::Bugs { app_name, begin: _, end: _, json, bugtracker: _ } => {
-            // Query LLM for bug identification and severity ranking formula: frequency * proximity
-            let sample_bugs = vec![
-                renderer::BugItem { description: "Crash on launch when offline".into(), severity: 0.89, status: Some("OPEN".into()) },
-                renderer::BugItem { description: "Dark mode color contrast bug in settings".into(), severity: 0.42, status: Some("CLOSED".into()) },
-            ];
-            bus.publish(RenderEvent::BugsOutput { app: app_name, bugs: sample_bugs, json_flag: json }).await;
+        Commands::Bugs { app_name, begin, end, json, bugtracker } => {
+            println!("Query LLM for bug identification and severity ranking formula: frequency * proximity");
+            bugs::run_bugs(&_config, &app_name, begin, end, json, bugtracker, &bus).await.unwrap();
         }
-        Commands::Counts { app_name, begin: _, end: _, ascending: _, descending: _, binsize: _ } => {
-            let sample_counts = vec![("Q1 2024".into(), 120), ("Q2 2024".into(), 240), ("Q3 2024".into(), 180)];
-            bus.publish(RenderEvent::CountsOutput { app: app_name, series: sample_counts }).await;
+        Commands::Counts { app_name, begin, end, ascending, descending, binsize } => {
+            println!("Tallying review counts over time buckets");
+            counts::run_counts(&_config, &app_name, begin, end, ascending, descending, binsize, &bus).await.unwrap();
         }
-        Commands::Sentiment { app_name, begin: _, end: _, ascending: _, descending: _, binsize: _ } => {
-            let sample_sentiment = vec![("Q1 2024".into(), 0.75), ("Q2 2024".into(), 0.82), ("Q3 2024".into(), 0.68)];
-            bus.publish(RenderEvent::SentimentOutput { app: app_name, series: sample_sentiment }).await;
+        Commands::Sentiment { app_name, begin, end, ascending, descending, binsize } => {
+            println!("Gauge aggregate user sentiment over time");
+            sentiment::run_sentiment(&_config, &app_name, begin, end, ascending, descending, binsize, &bus).await.unwrap();
         }
     }
 
